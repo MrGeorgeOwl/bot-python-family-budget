@@ -1,16 +1,19 @@
 import enum
 from typing import List
 
+
 class Category(enum.Enum):
     Chemistry = "Chemistry"
     Food = "Food"
     Pet = "Pet"
+
 
 _mapping = {
     "Chemistry": Category.Chemistry,
     "Food": Category.Food,
     "Pet": Category.Pet,
 }
+
 
 def get_category(category_name: str) -> Category:
     category = _mapping.get(category_name, None)

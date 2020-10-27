@@ -2,13 +2,14 @@ import os
 import logging
 import pathlib
 
-from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
+from telegram.ext import CommandHandler, Updater
 
 import expenses
 from exceptions import MessageException
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                     level=logging.INFO)
+logging.basicConfig(format='%(asctime)s - %(name)s '
+                           '- %(levelname)s - %(message)s',
+                    level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -28,7 +29,7 @@ def start(update, context):
         " заданный месяц"
         " * месяц опционален, если не выбран, то будут\n"
         " выведены траты за текущий месяц\n"
-        "/history (категория) (месяц)\n" 
+        "/history (категория) (месяц)\n"
         " - выводит историю в виде списка трат в виде\n"
         " сумма категория кто?\n"
         " * категория опциональна, если не выбрана, то\n"
@@ -74,7 +75,6 @@ def look_expenses(update, context):
             chat_id=update.effective_chat.id,
             text="Что-то пошло не так")
         logger.error(e)
-        
 
 
 func_to_model = [

@@ -1,5 +1,4 @@
 import os
-import pathlib
 from typing import Dict, List
 
 import psycopg2
@@ -13,7 +12,7 @@ cursor = conn.cursor()
 
 
 def insert(table: str, column_values: Dict) -> None:
-    columns = ', '.join( column_values.keys() )
+    columns = ', '.join(column_values.keys())
     values = tuple(column_values.values())
     cursor.execute(
         f"INSERT INTO {table} "

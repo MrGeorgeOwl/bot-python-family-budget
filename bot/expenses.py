@@ -3,7 +3,7 @@ from typing import Dict, NamedTuple, Optional, List
 import datetime
 
 import db
-from categories import Category, get_category, get_list_of_categories
+from categories import get_category, get_list_of_categories
 from exceptions import MessageException
 
 
@@ -22,13 +22,15 @@ months = {
     "декабрь": 12,
 }
 
+
 class Expense(NamedTuple):
     amount: float
     category: str
     comment: str
 
     def __str__(self):
-        return f"{amount} {category} {comment}"
+        return f"{self.amount} {self.category} {self.comment}"
+
 
 def add_expense(raw_message: str, context) -> None:
     parsed_message = _parse_adding_message(raw_message)
@@ -63,12 +65,11 @@ def look_expenses(raw_message: str) -> str:
     else:
         output = "Не было никаких трат в этом месяце"
     return output
-    
 
 
 def _parse_adding_message(raw_message: str) -> Expense:
     regexp_result = re.match(
-        r"([\d+]*(,|.)?[\d]{,2})\s+(\w+)\s+(\w+)", 
+        r"([\d+]*(,|.)?[\d]{,2})\s+(\w+)\s+(\w+)",
         raw_message)
     if not regexp_result:
         raise MessageException("Каво?\nПиши так: 150 категория комментарий")
@@ -81,7 +82,8 @@ def _parse_adding_message(raw_message: str) -> Expense:
         )
     except Exception:
         raise MessageException("Каво?\nНе могу понять категорию "
-                        "\nДолжна быть одна из них: Chemistry, Food или Pet")
+                               "\nДолжна быть одна из них: Chemistry, "
+                               "Food или Pet")
 
 
 def _parse_month(raw_message: str) -> Optional[int]:
@@ -100,5 +102,5 @@ def _calculate_expenses_for_month(expensies: List[Dict]):
                             in get_list_of_categories()}
     for expense in expensies:
         categories_expensies[expense["category"]] += expense['amount']
-    
+
     return [item for item in categories_expensies.items()]
