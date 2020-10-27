@@ -1,4 +1,3 @@
-import pdb
 import os
 import logging
 import pathlib
@@ -45,7 +44,6 @@ def add_expense(update, context):
     context.user_data['author'] = update.effective_user.first_name
     try:
         expenses.add_expense(message, context)
-        # pdb.set_trace()
         context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Трата была добавлена")
