@@ -1,9 +1,12 @@
 import os
+import pdb
+import pathlib
+from typing import Dict, List
 
 import psycopg2
 
-
 conn = psycopg2.connect(
+    host='localhost',
     dbname=os.environ.get('DB_NAME'),
     user=os.environ.get('DB_USER'),
     password=os.environ.get('DB_PASS'))
@@ -12,20 +15,18 @@ cursor = conn.cursor()
 
 def insert(table: str, column_values: Dict) -> None:
     columns = ', '.join( column_values.keys() )
-    values = [tuple(column_values.values())]
-    placeholders = ", ".join( "?" * len(column_values.keys()) )
-    cursor.executemany(
+    values = tuple(column_values.values())
+    cursor.execute(
         f"INSERT INTO {table} "
         f"({columns}) "
-        f"VALUES ({placeholders})",
-        values)
+        f"VALUES {values}")
     conn.commit()
 
 
 def fetchall(table: str, columns: List[str]) -> List[Dict]:
     columns_joined = ", ".join(columns)
     cursor.execute(f"SELECT {columns_joined} FROM {table}")
-    rows = conn.fetchall()
+    rows = cursor.fetchall()
 
     result = []
     for row in rows:
@@ -47,7 +48,7 @@ def get_cursor():
 
 
 def _init_db() -> None:
-    with open("createdb.sql", "r") as file:
+    with open("bot/createdb.sql", "r") as file:
         sql = file.read()
     cursor.execute(sql)
     conn.commit()
@@ -56,8 +57,8 @@ def _init_db() -> None:
 def check_table_exist() -> None:
     cursor.execute("select exists "
                    "(select * from information_schema.tables "
-                   "where table_name = 'expence');")
-    table_exists = cursor.fetchall()
+                   "where table_name = 'expense');")
+    table_exists = cursor.fetchall()[0][0]
     if not table_exists:
         _init_db()
     return
