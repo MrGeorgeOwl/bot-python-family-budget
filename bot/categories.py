@@ -1,19 +1,23 @@
 import enum
+from typing import List
 
 class Category(enum.Enum):
     Chemistry = "Chemistry"
     Food = "Food"
     Pet = "Pet"
 
-    mapping = {
-        "Chemistry": Category.Chemistry,
-        "Food": Category.Food,
-        "Pet": Category.Pet,
-    }
+_mapping = {
+    "Chemistry": Category.Chemistry,
+    "Food": Category.Food,
+    "Pet": Category.Pet,
+}
 
-    @staticmethod
-    def get_category(category_name: str) -> str:
-        category = Category.mapping.get(category_name, None)
-        if category:
-            return category
-        raise Exception("No such category")
+def get_category(category_name: str) -> Category:
+    category = _mapping.get(category_name, None)
+    if category:
+        return category
+    raise Exception("No such category")
+
+
+def get_list_of_categories() -> List[str]:
+    return _mapping.keys()
