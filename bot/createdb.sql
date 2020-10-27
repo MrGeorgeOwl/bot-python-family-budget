@@ -1,8 +1,8 @@
 create table expense(
     id serial primary key,
     author varchar,
-    created_at datetime default current_timestamp,
-    amount money not null,
+    created_at timestamp default current_timestamp,
+    amount numeric not null,
     category varchar not null,
-    comment text,
+    comment text
 )
