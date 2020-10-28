@@ -41,7 +41,7 @@ def start(update, context):
 
 
 def add_expense(update, context):
-    message = " ".join(update.message.text.split()[1:])
+    message = _cut_command(update.message.text)
     context.user_data['author'] = update.effective_user.first_name
     try:
         expenses.add_expense(message, context)
@@ -60,7 +60,7 @@ def add_expense(update, context):
 
 
 def look_expenses(update, context):
-    message = message = " ".join(update.message.text.split()[1:])
+    message = _cut_command(update.message.text)
     try:
         message = expenses.look_expenses(message)
         context.bot.send_message(
@@ -77,6 +77,29 @@ def look_expenses(update, context):
         logger.error(e)
 
 
+def look_history(update, context):
+    message = _cut_command(update.message.text)
+    try:
+        history = expenses.get_history(message)
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=history,
+        )
+    except MessageException as e:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=str(e))
+    except Exception as e:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Что-то пошло не так")
+        logger.error(e)
+
+
+def _cut_command(message: str) -> str:
+    return " ".join(message.split()[1:])
+
+
 func_to_model = [
     (start, CommandHandler, {
         "command": 'start',
@@ -87,6 +110,9 @@ func_to_model = [
     (look_expenses, CommandHandler, {
         'command': 'look_expenses',
     }),
+    (look_history, CommandHandler, {
+        'command': 'history',
+    })
 ]
 
 
