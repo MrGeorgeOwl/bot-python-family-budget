@@ -44,12 +44,6 @@ def add_expense(raw_message: str, context) -> None:
 
 def look_expenses(raw_message: str) -> str:
     month = _parse_month(raw_message)
-    if not month:
-        month = datetime.date.today().month
-
-    if month > datetime.date.today().month:
-        raise MessageException("Каво? Ты назад в будущее решил отправиться?")
-
     expenses = db.fetchall("expense", [
         "amount",
         "category",
@@ -60,8 +54,8 @@ def look_expenses(raw_message: str) -> str:
         expenses))
     if expenses:
         category_expensies = _calculate_expenses_for_month(expenses)
-        output = "\n".join([f"{category_expense[0]}: {category_expense[1]}"
-                            for category_expense in category_expensies])
+        output = "\n".join([f"{category}: {sum_expenses}"
+                            for category, sum_expenses in category_expensies])
     else:
         output = "Не было никаких трат в этом месяце"
     return output
@@ -74,7 +68,7 @@ def _parse_adding_message(raw_message: str) -> Expense:
     if not regexp_result:
         raise MessageException("Каво?\nПиши так: 150 категория комментарий")
     try:
-        category = get_category(regexp_result.group(3).strip()).value
+        category = get_category(regexp_result.group(3).strip().lower()).value
         return Expense(
             amount=float(regexp_result.group(1).replace(",", ".")),
             category=category,
@@ -82,17 +76,21 @@ def _parse_adding_message(raw_message: str) -> Expense:
         )
     except Exception:
         raise MessageException("Каво?\nНе могу понять категорию "
-                               "\nДолжна быть одна из них: Chemistry, "
-                               "Food или Pet")
+                               "\nДолжна быть одна из них: химия, "
+                               "еда или питомец")
 
 
 def _parse_month(raw_message: str) -> Optional[int]:
     regexp_result = re.match(r"(\w+)", raw_message)
     if not regexp_result:
-        return None
+        return datetime.date.today().month
     month = regexp_result.group(1).lower()
+
     if month not in months.keys():
         raise MessageException("Каво? Что это за месяц вообще?")
+
+    if month > datetime.date.today().month:
+        raise MessageException("Каво? Ты назад в будущее решил отправиться?")
 
     return months[month]
 
