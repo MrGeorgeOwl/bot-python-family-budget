@@ -96,6 +96,29 @@ def look_history(update, context):
         logger.error(e)
 
 
+def show_help(update, context):
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Вот мои команды\n"
+        "/add_expense 150 категория комментарий\n"
+        " - добавляет новую трату в размере 150 рублей с\n"
+        " заданным комментарием\n"
+        "/look_expenses (месяц)\n"
+        " - выводит общую сумму траты по категориям за\n"
+        " заданный месяц"
+        " * месяц опционален, если не выбран, то будут\n"
+        " выведены траты за текущий месяц\n"
+        "/history (категория) (месяц)\n"
+        " - выводит историю в виде списка трат в виде\n"
+        " сумма категория кто?\n"
+        " * категория опциональна, если не выбрана, то\n"
+        " буду выведены все траты всех категорий\n"
+        " * месяц опционален, если не выбран, то будут\n"
+        " выведены траты за текущий месяц\n"
+        " /help\n"
+        " - выводит доступные команды\n")
+
+
 def _cut_command(message: str) -> str:
     return " ".join(message.split()[1:])
 
@@ -112,6 +135,9 @@ func_to_model = [
     }),
     (look_history, CommandHandler, {
         'command': 'history',
+    }),
+    (show_help, CommandHandler, {
+        'command': 'help',
     })
 ]
 
