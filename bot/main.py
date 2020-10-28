@@ -5,6 +5,7 @@ import pathlib
 from telegram.ext import CommandHandler, Updater
 
 import expenses
+import categories
 from exceptions import MessageException
 
 logging.basicConfig(format='%(asctime)s - %(name)s '
@@ -94,6 +95,26 @@ def look_history(update, context):
             chat_id=update.effective_chat.id,
             text="Что-то пошло не так")
         logger.error(e)
+    
+
+def show_categories(update, context):
+    try:
+        message = ("Доступные категории: \n" 
+                + "\n".join(categories.get_list_of_categories()))
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=message,
+        )
+    except MessageException as e:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=str(e))
+    except Exception as e:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Что-то пошло не так")
+        logger.error(e)
+
 
 
 def show_help(update, context):
@@ -115,6 +136,8 @@ def show_help(update, context):
         " буду выведены все траты всех категорий\n"
         " * месяц опционален, если не выбран, то будут\n"
         " выведены траты за текущий месяц\n"
+        "/categories\n"
+        " - выводит доступные категории"
         " /help\n"
         " - выводит доступные команды\n")
 
@@ -138,7 +161,10 @@ func_to_model = [
     }),
     (show_help, CommandHandler, {
         'command': 'help',
-    })
+    }),
+    (show_categories, CommandHandler, {
+        'command': 'categories',
+    }),
 ]
 
 
