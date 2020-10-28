@@ -79,7 +79,7 @@ def get_history(raw_message: str) -> str:
 
 def _parse_adding_message(raw_message: str) -> Expense:
     regexp_result = re.match(
-        r"([\d+]*(,|.)?[\d]{,2})\s+(\w+)\s+(\w+)",
+        r"([\d+]*(,|.)?[\d]{,2})\s+(\w+)(\s+)?(.*)?",
         raw_message)
     if not regexp_result:
         raise MessageException("Каво?\nПиши так: 150 категория комментарий")
@@ -88,7 +88,7 @@ def _parse_adding_message(raw_message: str) -> Expense:
         return Expense(
             amount=float(regexp_result.group(1).replace(",", ".")),
             category=category,
-            comment=regexp_result.group(4),
+            comment=regexp_result.group(5) if regexp_result.group(5) else "",
         )
     except Exception:
         raise MessageException("Каво?\nНе могу понять категорию "
@@ -105,10 +105,11 @@ def _parse_month(raw_message: str) -> Optional[int]:
     if month not in months.keys():
         raise MessageException("Каво? Что это за месяц вообще?")
 
+    month = months[month]
     if month > datetime.date.today().month:
         raise MessageException("Каво? Ты назад в будущее решил отправиться?")
 
-    return months[month]
+    return month
 
 
 def _calculate_expenses_for_month(expensies: List[Dict]):
