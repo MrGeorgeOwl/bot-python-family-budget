@@ -3,15 +3,15 @@ from typing import List
 
 
 class Category(enum.Enum):
-    Chemistry = "Chemistry"
-    Food = "Food"
-    Pet = "Pet"
+    Chemistry = "химия"
+    Food = "еда"
+    Pet = "питомец"
 
 
 _mapping = {
-    "Chemistry": Category.Chemistry,
-    "Food": Category.Food,
-    "Pet": Category.Pet,
+    "химия": Category.Chemistry,
+    "еда": Category.Food,
+    "питомец": Category.Pet,
 }
 
 
