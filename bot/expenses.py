@@ -1,5 +1,5 @@
 import re
-from typing import Dict, NamedTuple, Optional, List
+from typing import Dict, List, NamedTuple, Optional, Tuple
 import datetime
 
 import db
@@ -61,6 +61,22 @@ def look_expenses(raw_message: str) -> str:
     return output
 
 
+def get_history(raw_message: str) -> str:
+    values = _parse_history_message(raw_message)
+    if not values:
+        history = _build_history()
+    elif values[1]:
+        history = _build_history(*values)
+    elif not values[1]:
+        value_name, value = _define_value(values[0])
+        history = _build_history(**{value_name: value})
+    else:
+        raise MessageException("Каво? Что это значит?\n"
+                               "Пиши в формате: /history категория месяц")
+    output = "\n".join([str(expense) for expense in history])
+    return output
+
+
 def _parse_adding_message(raw_message: str) -> Expense:
     regexp_result = re.match(
         r"([\d+]*(,|.)?[\d]{,2})\s+(\w+)\s+(\w+)",
@@ -96,9 +112,56 @@ def _parse_month(raw_message: str) -> Optional[int]:
 
 
 def _calculate_expenses_for_month(expensies: List[Dict]):
+    # TODO: Do the same but using sql sequence.
     categories_expensies = {category: 0 for category
                             in get_list_of_categories()}
     for expense in expensies:
         categories_expensies[expense["category"]] += expense['amount']
 
     return [item for item in categories_expensies.items()]
+
+
+def _parse_history_message(raw_message: str) -> Optional[Tuple[str]]:
+    regexp_result = re.match(r"(\w+)(\s+)?(\w+)?", raw_message)
+    if not regexp_result:
+        return None
+    if not(regexp_result.group(3)):
+        return regexp_result.group(1), None
+    else:
+        return regexp_result.group(1), months[regexp_result.group(3)]
+
+
+def _define_value(value: str) -> Tuple[str]:
+    value = value.lower()
+    if value in months.keys():
+        return "month", months[value]
+    elif value in get_list_of_categories():
+        return "category", value
+    else:
+        raise MessageException("Каво? Что это значит?\n"
+                               "Пиши в формате: /history категория месяц")
+
+
+def _build_history(
+    category: Optional[int] = None,
+    month: int = datetime.date.today().month
+) -> List[Expense]:
+    category = [category] if category else get_list_of_categories()
+    rows = db.fetchall('expense', [
+        'amount',
+        'category',
+        'comment',
+        'created_at'
+    ])
+    rows = filter(lambda x: x['created_at'].month == month
+                  and x['category'] in category, rows)
+    return list(
+        map(
+            lambda x: Expense(
+                amount=x['amount'],
+                category=x['category'],
+                comment=x['comment'],
+            ),  # map to Expense object
+            sorted(rows, key=lambda x: x['created_at'],
+                   reverse=True),  # sort by date
+        ))
