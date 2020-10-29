@@ -74,7 +74,7 @@ def get_history(raw_message: str) -> str:
         raise MessageException("Каво? Что это значит?\n"
                                "Пиши в формате: /history категория месяц")
     output = "\n".join([str(expense) for expense in history])
-    return output
+    return output if output else "Не было никаких трат в этом месяце и категории"
 
 
 def _parse_adding_message(raw_message: str) -> Expense:
