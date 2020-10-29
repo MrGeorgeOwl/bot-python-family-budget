@@ -4,7 +4,7 @@ from typing import Dict, List
 import psycopg2
 
 conn = psycopg2.connect(
-    host='localhost',
+    host=os.environ.get('HOST'),
     dbname=os.environ.get('DB_NAME'),
     user=os.environ.get('DB_USER'),
     password=os.environ.get('DB_PASS'))
