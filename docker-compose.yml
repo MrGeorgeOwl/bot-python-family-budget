@@ -1,12 +1,21 @@
 version: '3.0'
 
 services:
-    db:
-      image: postgres
-      container_name: bot_postgres
-      environment:
-        POSTGRES_USER: "${DB_USER}"
-        POSTGRES_DB: "${DB_NAME}"
-        POSTGRES_PASSWORD: "${DB_PASS}"
-      ports:
-        - '5432:5432'
+  app:
+    image: mrgeorgeowl/bot_finance:1.0
+    container_name: bot_app
+    environment:
+      TELEGRAM_TOKEN: "${TELEGRAM_TOKEN}"
+      HOST: "db"
+      DB_USER: "${DB_USER}"
+      DB_NAME: "${DB_NAME}"
+      DB_PASS: "${DB_PASS}"
+  db:
+    image: postgres
+    container_name: bot_postgres
+    environment:
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_DB: "${DB_NAME}"
+      POSTGRES_PASSWORD: "${DB_PASS}"
+    ports:
+      - '5432:5432'
