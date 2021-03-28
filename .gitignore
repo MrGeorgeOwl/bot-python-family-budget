@@ -140,3 +140,4 @@ cython_debug/
 .vscode
 .env
 notes.txt
+dump.sql
