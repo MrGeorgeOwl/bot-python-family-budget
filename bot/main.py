@@ -97,11 +97,11 @@ def look_history(update, context):
             chat_id=update.effective_chat.id,
             text="Что-то пошло не так")
         logger.error(e)
-    
+
 
 def show_categories(update, context):
     try:
-        message = ("Доступные категории: \n" 
+        message = ("Доступные категории: \n"
                 + "\n".join(categories.get_list_of_categories()))
         context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -176,12 +176,13 @@ def add_handlers(dispatcher):
 
 
 def main():
+    logger.info(f"BOT_TOKEN: {BOT_TOKEN}")
     updater = Updater(token=BOT_TOKEN, use_context=True)
     dispatcher = updater.dispatcher
     add_handlers(dispatcher)
 
     updater.start_polling()
-    
+
     updater.idle()
 
 
