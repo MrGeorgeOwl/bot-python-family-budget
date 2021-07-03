@@ -8,9 +8,10 @@ import expenses
 import categories
 from exceptions import MessageException
 
-logging.basicConfig(format='%(asctime)s - %(name)s '
-                           '- %(levelname)s - %(message)s',
-                    level=logging.INFO)
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO,
+)
 logger = logging.getLogger(__name__)
 
 BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -116,7 +117,6 @@ def show_categories(update, context):
             chat_id=update.effective_chat.id,
             text="Что-то пошло не так")
         logger.error(e)
-
 
 
 def show_help(update, context):
