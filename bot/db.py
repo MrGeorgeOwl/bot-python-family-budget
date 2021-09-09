@@ -1,65 +1,124 @@
+"""Module which contains functions for working with db."""
 import os
-from typing import Dict, List
+from typing import List
 
-import psycopg2
+from psycopg2 import connect, sql
 
-conn = psycopg2.connect(
+conn = connect(
     host=os.environ.get('HOST', 'localhost'),
     dbname=os.environ.get('DB_NAME'),
     user=os.environ.get('DB_USER'),
-    password=os.environ.get('DB_PASS'))
+    password=os.environ.get('DB_PASS'),
+)
 cursor = conn.cursor()
 
 
-def insert(table: str, column_values: Dict) -> None:
-    columns = ', '.join(column_values.keys())
-    values = tuple(column_values.values())
-    cursor.execute(
-        f"INSERT INTO {table} "
-        f"({columns}) "
-        f"VALUES {values}")
+def insert(table: str, column_values: dict) -> None:
+    """
+    Insert new row in table.
+
+    Args:
+        table: Table name.
+        column_values: Values of new row.
+    """
+    query = sql.SQL(
+        'INSERT INTO {table} '
+        + '({columns}) ',
+    ).format(
+        table=sql.Identifier(table),
+        columns=sql.SQL(',').join(
+            [sql.Identifier(key) for key in column_values.keys()],
+        ),
+        row_values=sql.SQL(',').join(
+            [sql.Literal(row_value) for row_value in column_values.values()],
+        ),
+    )
+    cursor.execute(query)
     conn.commit()
 
 
-def fetchall(table: str, columns: List[str]) -> List[Dict]:
-    columns_joined = ", ".join(columns)
-    cursor.execute(f"SELECT {columns_joined} FROM {table}")
+def fetchall(table: str, columns: List[str]) -> List[dict]:
+    """
+    Fetch all columns from table.
+
+    Args:
+        table: Table name.
+        columns: Columns of table which must be returned.
+
+    Returns:
+        List of rows.
+    """
+    query = sql.SQL(
+        'SELECT {columns} FROM {table}',
+    ).format(
+        columns=sql.SQL(',').join(
+            [sql.Identifier(column) for column in columns],
+        ),
+        table=sql.Identifier(table),
+    )
+    cursor.execute(query)
     rows = cursor.fetchall()
 
-    result = []
-    for row in rows:
-        dict_row = {}
-        for index, column in enumerate(row):
-            dict_row[columns[index]] = column
-        result.append(dict_row)
-
-    return result
+    return [
+        {
+            columns[index]: column_value
+            for index, column_value in enumerate(row)
+        }
+        for row in rows
+    ]
 
 
 def delete(table: str, row_id: int) -> None:
-    cursor.execute(f"DELETE FROM {table} WHERE id={row_id}")
+    """
+    Delete table row.
+
+    Args:
+        table: Table name.
+        row_id: Id of row which must be deleted.
+    """
+    query = sql.SQL(
+        'DELETE FROM {table} WHERE id={row_id}',
+    ).format(
+        table=sql.Identifier(table),
+        row_id=sql.Literal(row_id),
+    )
+    cursor.execute(query)
     conn.commit()
 
 
 def get_cursor():
+    """
+    Get cursor connection with db.
+
+    Returns:
+        Cursor object to connect with db.
+    """
     return cursor
 
 
 def _init_db() -> None:
-    with open("bot/createdb.sql", "r") as file:
-        sql = file.read()
-    cursor.execute(sql)
+    with open('bot/createdb.sql', 'r') as sql_script:
+        sql_content = sql_script.read()
+    cursor.execute(sql_content)
     conn.commit()
 
 
 def check_table_exist() -> None:
-    cursor.execute("select exists "
-                   "(select * from information_schema.tables "
-                   "where table_name = 'expense');")
+    """Check table existence and create it if needed."""
+    query = sql.SQL(
+        'SELECT EXISTS '
+        + '(SELECT * FROM {from_table} '  # noqa: S608
+        + 'WHERE table_name = {table});',
+    ).format(
+        from_table=sql.Identifier('information_schema.tables'),
+        table=sql.Identifier('expense'),
+    )
+    cursor.execute(
+        query,
+    )
     table_exists = cursor.fetchall()[0][0]
     if not table_exists:
         _init_db()
-    return
 
 
 check_table_exist()

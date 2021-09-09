@@ -1,3 +1,6 @@
+"""Module which contains custom exceptions."""
+
+
 class MessageException(Exception):
     pass
 
